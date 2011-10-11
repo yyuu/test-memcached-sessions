@@ -32,7 +32,7 @@ public class MemcachedTestServer extends AbstractTestServer
 {
     
     static MemcachedSessionIdManager _idManager;
-    private boolean _saveAllAttributes = false; // false save dirty, true save all
+    protected boolean _saveAllAttributes = false; // false save dirty, true save all
     
     public MemcachedTestServer(int port)
     {
