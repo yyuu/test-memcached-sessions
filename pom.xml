@@ -6,9 +6,7 @@
 		<artifactId>jetty-nosql-memcached-tests</artifactId>
 		<version>0.1.1-SNAPSHOT</version>
 	</parent>
-	<groupId>com.geishatokyo.jetty.tests</groupId>
 	<artifactId>test-memcached-sessions</artifactId>
-	<version>0.1.1-SNAPSHOT</version>
 	<name>test-memcached-sessions</name>
 	<properties>
 <!--
