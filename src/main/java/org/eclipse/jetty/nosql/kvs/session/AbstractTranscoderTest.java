@@ -1,4 +1,4 @@
-package org.eclipse.jetty.nosql.session;
+package org.eclipse.jetty.nosql.kvs.session;
 
 import java.io.Serializable;
 import java.util.Arrays;
