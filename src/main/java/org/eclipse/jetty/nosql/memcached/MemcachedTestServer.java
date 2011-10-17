@@ -17,6 +17,7 @@ package org.eclipse.jetty.nosql.memcached;
 
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.jetty.nosql.kvs.KeyValueStoreSessionIdManager;
 import org.eclipse.jetty.nosql.memcached.MemcachedSessionIdManager;
 import org.eclipse.jetty.nosql.memcached.MemcachedSessionManager;
 import org.eclipse.jetty.server.SessionIdManager;
@@ -30,30 +31,35 @@ import org.eclipse.jetty.server.session.SessionHandler;
  */
 public class MemcachedTestServer extends AbstractTestServer
 {
-    
-    static MemcachedSessionIdManager _idManager;
+    protected KeyValueStoreSessionIdManager _idManager;
     protected boolean _saveAllAttributes = false; // false save dirty, true save all
     
     public MemcachedTestServer(int port)
     {
-        super(port, 30, 10);
+        this(port, 30, 10);
     }
 
     public MemcachedTestServer(int port, int maxInactivePeriod, int scavengePeriod)
     {
-        super(port, maxInactivePeriod, scavengePeriod);
+        this(port, maxInactivePeriod, scavengePeriod, null);
     }
     
+    public MemcachedTestServer(int port, int maxInactivePeriod, int scavengePeriod, String sessionIdMgrConfig) {
+        super(port, maxInactivePeriod, scavengePeriod, sessionIdMgrConfig);
+    }
     
     public MemcachedTestServer(int port, int maxInactivePeriod, int scavengePeriod, boolean saveAllAttributes)
     {
-        super(port, maxInactivePeriod, scavengePeriod);
+        this(port, maxInactivePeriod, scavengePeriod);
         
         _saveAllAttributes = saveAllAttributes;
     }
 
     public SessionIdManager newSessionIdManager(String config) // TODO: use config as serverString
     {
+        if (config == null) {
+            config = "127.0.0.1:11211";
+        }
         if ( _idManager != null )
         {
             try
@@ -83,7 +89,7 @@ public class MemcachedTestServer extends AbstractTestServer
         try
         {
             System.err.println("MemcachedTestServer:SessionIdManager:" + _maxInactivePeriod + "/" + _scavengePeriod);
-            _idManager = new MemcachedSessionIdManager(_server, "127.0.0.1:11211");
+            _idManager = new MemcachedSessionIdManager(_server, config);
             
             _idManager.setScavengePeriod((int)TimeUnit.SECONDS.toMillis(_scavengePeriod));
             _idManager.setKeyPrefix("MemcachedTestServer::");
