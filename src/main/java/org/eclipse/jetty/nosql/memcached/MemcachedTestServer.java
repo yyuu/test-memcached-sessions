@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.jetty.nosql.kvs.KeyValueStoreSessionIdManager;
 import org.eclipse.jetty.nosql.memcached.MemcachedSessionIdManager;
 import org.eclipse.jetty.nosql.memcached.MemcachedSessionManager;
+import org.eclipse.jetty.nosql.memcached.hashmap.HashMapClientFactory;
 import org.eclipse.jetty.server.SessionIdManager;
 import org.eclipse.jetty.server.SessionManager;
 import org.eclipse.jetty.server.session.AbstractTestServer;
@@ -89,8 +90,13 @@ public class MemcachedTestServer extends AbstractTestServer
         try
         {
             System.err.println("MemcachedTestServer:SessionIdManager:" + _maxInactivePeriod + "/" + _scavengePeriod);
-            _idManager = new MemcachedSessionIdManager(_server, config);
-            
+            // FIXME: need more sophisticated way to change this behavior
+            String useMock = System.getProperty("org.eclipse.jetty.nosql.memcached.useMock", "true");
+            if ("false".equals(useMock)) {
+                _idManager = new MemcachedSessionIdManager(_server, config);
+            } else {
+                _idManager = new MemcachedSessionIdManager(_server, config, new HashMapClientFactory());
+            }
             _idManager.setScavengePeriod((int)TimeUnit.SECONDS.toMillis(_scavengePeriod));
             _idManager.setKeyPrefix("MemcachedTestServer::");
             
