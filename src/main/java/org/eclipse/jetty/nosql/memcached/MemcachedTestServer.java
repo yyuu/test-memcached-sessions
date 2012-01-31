@@ -99,6 +99,11 @@ public class MemcachedTestServer extends AbstractTestServer
             }
             _idManager.setScavengePeriod((int)TimeUnit.SECONDS.toMillis(_scavengePeriod));
             _idManager.setKeyPrefix("MemcachedTestServer::");
+            _idManager.setKeySuffix("::MemcachedTestServer");
+            // to avoid stupid bugs of instance initialization...
+            _idManager.setDefaultExpiry(_idManager.getDefaultExpiry());
+            _idManager.setServerString(_idManager.getServerString());
+            _idManager.setTimeoutInMs(_idManager.getTimeoutInMs());
             
             return _idManager;
         }
