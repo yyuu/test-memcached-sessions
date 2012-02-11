@@ -21,6 +21,7 @@ import org.eclipse.jetty.nosql.kvs.KeyValueStoreSessionIdManager;
 import org.eclipse.jetty.nosql.memcached.MemcachedSessionIdManager;
 import org.eclipse.jetty.nosql.memcached.MemcachedSessionManager;
 import org.eclipse.jetty.nosql.memcached.hashmap.HashMapClientFactory;
+import org.eclipse.jetty.nosql.memcached.spymemcached.BinarySpyMemcachedClientFactory;
 import org.eclipse.jetty.server.SessionIdManager;
 import org.eclipse.jetty.server.SessionManager;
 import org.eclipse.jetty.server.session.AbstractTestServer;
@@ -56,7 +57,7 @@ public class MemcachedTestServer extends AbstractTestServer
         _saveAllAttributes = saveAllAttributes;
     }
 
-    public SessionIdManager newSessionIdManager(String config) // TODO: use config as serverString
+    public SessionIdManager newSessionIdManager(String config)
     {
         if (config == null) {
             config = "127.0.0.1:11211";
@@ -92,8 +93,13 @@ public class MemcachedTestServer extends AbstractTestServer
             System.err.println("MemcachedTestServer:SessionIdManager:" + _maxInactivePeriod + "/" + _scavengePeriod);
             // FIXME: need more sophisticated way to change this behavior
             String useMock = System.getProperty("org.eclipse.jetty.nosql.memcached.useMock", "true");
+            String useBinary = System.getProperty("org.eclipse.jetty.nosql.memcached.useBinary", "false");
             if ("false".equals(useMock)) {
-                _idManager = new MemcachedSessionIdManager(_server, config);
+                if ("true".equals(useBinary)) {
+                    _idManager = new MemcachedSessionIdManager(_server, config, new BinarySpyMemcachedClientFactory());
+                } else {
+                    _idManager = new MemcachedSessionIdManager(_server, config);
+                }
             } else {
                 _idManager = new MemcachedSessionIdManager(_server, config, new HashMapClientFactory());
             }
