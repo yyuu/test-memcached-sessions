@@ -18,10 +18,13 @@ package org.eclipse.jetty.nosql.memcached;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jetty.nosql.kvs.KeyValueStoreSessionIdManager;
+import org.eclipse.jetty.nosql.memcached.AbstractMemcachedClientFactory;
 import org.eclipse.jetty.nosql.memcached.MemcachedSessionIdManager;
 import org.eclipse.jetty.nosql.memcached.MemcachedSessionManager;
 import org.eclipse.jetty.nosql.memcached.hashmap.HashMapClientFactory;
 import org.eclipse.jetty.nosql.memcached.spymemcached.BinarySpyMemcachedClientFactory;
+import org.eclipse.jetty.nosql.memcached.spymemcached.SpyMemcachedClientFactory;
+import org.eclipse.jetty.nosql.memcached.xmemcached.XMemcachedClientFactory;
 import org.eclipse.jetty.server.SessionIdManager;
 import org.eclipse.jetty.server.SessionManager;
 import org.eclipse.jetty.server.session.AbstractTestServer;
@@ -91,26 +94,21 @@ public class MemcachedTestServer extends AbstractTestServer
         try
         {
             System.err.println("MemcachedTestServer:SessionIdManager:" + _maxInactivePeriod + "/" + _scavengePeriod);
-            // FIXME: need more sophisticated way to change this behavior
-            String useMock = System.getProperty("org.eclipse.jetty.nosql.memcached.useMock", "true");
-            String useBinary = System.getProperty("org.eclipse.jetty.nosql.memcached.useBinary", "false");
-            if ("false".equals(useMock)) {
-                if ("true".equals(useBinary)) {
-                    _idManager = new MemcachedSessionIdManager(_server, config, new BinarySpyMemcachedClientFactory());
-                } else {
-                    _idManager = new MemcachedSessionIdManager(_server, config);
-                }
+            AbstractMemcachedClientFactory clientFactory = getMemcachedClientFactory();
+            if (clientFactory == null) {
+                _idManager = new MemcachedSessionIdManager(_server, config);
             } else {
-                _idManager = new MemcachedSessionIdManager(_server, config, new HashMapClientFactory());
+                _idManager = new MemcachedSessionIdManager(_server, config, clientFactory);
             }
             _idManager.setScavengePeriod((int)TimeUnit.SECONDS.toMillis(_scavengePeriod));
             _idManager.setKeyPrefix("MemcachedTestServer::");
             _idManager.setKeySuffix("::MemcachedTestServer");
+            _idManager.setSticky(true);
             // to avoid stupid bugs of instance initialization...
             _idManager.setDefaultExpiry(_idManager.getDefaultExpiry());
             _idManager.setServerString(_idManager.getServerString());
             _idManager.setTimeoutInMs(_idManager.getTimeoutInMs());
-            
+
             return _idManager;
         }
         catch (Exception e)
@@ -157,4 +155,30 @@ public class MemcachedTestServer extends AbstractTestServer
         server8081.join();
     }
 
+    public AbstractMemcachedClientFactory getMemcachedClientFactory() {
+        String useMock = System.getProperty("org.eclipse.jetty.nosql.memcached.useMock", "true").trim().toLowerCase(); // backward compatibility
+        String useBinary = System.getProperty("org.eclipse.jetty.nosql.memcached.useBinary", "false").trim().toLowerCase(); // backward compatibility
+        String cfName = System.getProperty("org.eclipse.jetty.nosql.memcached.clientFactory", "default").trim().toLowerCase();
+        AbstractMemcachedClientFactory clientFactory;
+        if (cfName.contains("spy")) {
+            if (cfName.contains("binary")) {
+                clientFactory = new BinarySpyMemcachedClientFactory();
+            } else {
+                clientFactory = new SpyMemcachedClientFactory();
+            }
+        } else if (cfName.contains("xmemcached")) {
+            clientFactory = new XMemcachedClientFactory();
+        } else {
+            if ("true".equals(useMock)) {
+                clientFactory = new HashMapClientFactory();
+            } else {
+                if ("true".equals(useBinary)) {
+                    clientFactory = new BinarySpyMemcachedClientFactory();
+                } else {
+                    clientFactory = new SpyMemcachedClientFactory();
+                }
+            }
+        }
+        return clientFactory;
+    }
 }
