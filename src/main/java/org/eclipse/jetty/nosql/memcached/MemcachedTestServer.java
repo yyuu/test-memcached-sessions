@@ -23,6 +23,7 @@ import org.eclipse.jetty.nosql.memcached.MemcachedSessionIdManager;
 import org.eclipse.jetty.nosql.memcached.MemcachedSessionManager;
 import org.eclipse.jetty.nosql.memcached.hashmap.HashMapClientFactory;
 import org.eclipse.jetty.nosql.memcached.spymemcached.BinarySpyMemcachedClientFactory;
+import org.eclipse.jetty.nosql.memcached.spymemcached.HerokuSpyMemcachedClientFactory;
 import org.eclipse.jetty.nosql.memcached.spymemcached.SpyMemcachedClientFactory;
 import org.eclipse.jetty.nosql.memcached.xmemcached.XMemcachedClientFactory;
 import org.eclipse.jetty.server.SessionIdManager;
@@ -46,7 +47,7 @@ public class MemcachedTestServer extends AbstractTestServer
 
     public MemcachedTestServer(int port, int maxInactivePeriod, int scavengePeriod)
     {
-        this(port, maxInactivePeriod, scavengePeriod, null);
+        this(port, maxInactivePeriod, scavengePeriod, System.getProperty("org.eclipse.jetty.nosql.memcached.servers"));
     }
     
     public MemcachedTestServer(int port, int maxInactivePeriod, int scavengePeriod, String sessionIdMgrConfig) {
@@ -56,7 +57,6 @@ public class MemcachedTestServer extends AbstractTestServer
     public MemcachedTestServer(int port, int maxInactivePeriod, int scavengePeriod, boolean saveAllAttributes)
     {
         this(port, maxInactivePeriod, scavengePeriod);
-        
         _saveAllAttributes = saveAllAttributes;
     }
 
@@ -103,7 +103,8 @@ public class MemcachedTestServer extends AbstractTestServer
             _idManager.setScavengePeriod((int)TimeUnit.SECONDS.toMillis(_scavengePeriod));
             _idManager.setKeyPrefix("MemcachedTestServer::");
             _idManager.setKeySuffix("::MemcachedTestServer");
-            _idManager.setSticky(true);
+            String isSticky = System.getProperty("org.eclipse.jetty.nosql.memcached.sticky", "true").trim().toLowerCase();
+            _idManager.setSticky("true".equals(isSticky));
             // to avoid stupid bugs of instance initialization...
             _idManager.setDefaultExpiry(_idManager.getDefaultExpiry());
             _idManager.setServerString(_idManager.getServerString());
@@ -162,12 +163,24 @@ public class MemcachedTestServer extends AbstractTestServer
         AbstractMemcachedClientFactory clientFactory;
         if (cfName.contains("spy")) {
             if (cfName.contains("binary")) {
-                clientFactory = new BinarySpyMemcachedClientFactory();
+                if (cfName.contains("heroku")) {
+                    clientFactory = new HerokuSpyMemcachedClientFactory();
+                } else {
+                    clientFactory = new BinarySpyMemcachedClientFactory();
+                }
             } else {
                 clientFactory = new SpyMemcachedClientFactory();
             }
         } else if (cfName.contains("xmemcached")) {
-            clientFactory = new XMemcachedClientFactory();
+            if (cfName.contains("binary")) {
+              if (cfName.contains("heroku")) {
+                  clientFactory = new XMemcachedClientFactory(); // FIXME: create HerokuXMemcachedClientFactory
+              } else {
+                  clientFactory = new XMemcachedClientFactory(); // FIXME: create BinaryXMemcachedClientFactory
+              }
+            } else {
+                clientFactory = new XMemcachedClientFactory();
+            }
         } else {
             if ("true".equals(useMock)) {
                 clientFactory = new HashMapClientFactory();
