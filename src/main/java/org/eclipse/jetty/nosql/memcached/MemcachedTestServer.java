@@ -25,6 +25,7 @@ import org.eclipse.jetty.nosql.memcached.hashmap.HashMapClientFactory;
 import org.eclipse.jetty.nosql.memcached.spymemcached.BinarySpyMemcachedClientFactory;
 import org.eclipse.jetty.nosql.memcached.spymemcached.HerokuSpyMemcachedClientFactory;
 import org.eclipse.jetty.nosql.memcached.spymemcached.SpyMemcachedClientFactory;
+import org.eclipse.jetty.nosql.memcached.xmemcached.BinaryXMemcachedClientFactory;
 import org.eclipse.jetty.nosql.memcached.xmemcached.XMemcachedClientFactory;
 import org.eclipse.jetty.server.SessionIdManager;
 import org.eclipse.jetty.server.SessionManager;
@@ -183,9 +184,9 @@ public class MemcachedTestServer extends AbstractTestServer
         } else if (cfName.contains("xmemcached")) {
             if (cfName.contains("binary")) {
               if (cfName.contains("heroku")) {
-                  clientFactory = new XMemcachedClientFactory(); // FIXME: create HerokuXMemcachedClientFactory
+                  clientFactory = new BinaryXMemcachedClientFactory(); // FIXME: create HerokuXMemcachedClientFactory
               } else {
-                  clientFactory = new XMemcachedClientFactory(); // FIXME: create BinaryXMemcachedClientFactory
+                  clientFactory = new BinaryXMemcachedClientFactory();
               }
             } else {
                 clientFactory = new XMemcachedClientFactory();
