@@ -7,36 +7,22 @@
 	</parent>
 	<artifactId>test-memcached-sessions</artifactId>
 	<name>test-memcached-sessions</name>
-	<properties>
-<!--
-		<jetty.version>8.0.2.v20111006</jetty.version>
-  -->
-	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.8.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty.tests</groupId>
 			<artifactId>test-sessions-common</artifactId>
-			<version>${jetty.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.geishatokyo.jetty</groupId>
 			<artifactId>jetty-nosql-memcached</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.geishatokyo.jetty</groupId>
-			<artifactId>jetty-nosql-kvs</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency><!-- added slf4j as dependency since xmemcached requires it on testing -->
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.6.1</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
