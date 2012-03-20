@@ -7,6 +7,7 @@
 	</parent>
 	<artifactId>test-memcached-sessions</artifactId>
 	<name>test-memcached-sessions</name>
+	<description>Test cases for jetty-nosql-memcached and relating projects.</description>
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
